@@ -1,0 +1,25 @@
+#sbt
+/project/target/
+/project/project/target
+
+/target/
+target/
+/src/jline/target/
+
+# target directories for ant build
+/build/
+/dists/
+
+# other
+/out/
+/bin/
+/lib/
+
+# bak files produced by ./cleanup-commit
+*.bak
+
+# sublime project files
+.sublime
+/*.sublime
+/*.sublime-workspace
+.ensime*
