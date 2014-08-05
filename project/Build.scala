@@ -26,7 +26,7 @@ object MyBuild extends Build {
     file("macros"),
     settings = buildSettings ++ Seq(
       name := "Mixin Composition",
-      version := "0.1-SNAPSHOT",
+      version := "0.2-SNAPSHOT",
       libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _),
       libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies ++= (
