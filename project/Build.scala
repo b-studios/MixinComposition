@@ -28,6 +28,7 @@ object MyBuild extends Build {
       name := "Mixin Composition",
       version := "0.1-SNAPSHOT",
       libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _),
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies ++= (
         if (scalaVersion.value.startsWith("2.10")) List("org.scalamacros" %% "quasiquotes" % paradiseVersion)
         else Nil

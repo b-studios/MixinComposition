@@ -1,13 +1,12 @@
 package de.unimarburg
 package composition
 
-import scala.reflect.macros.Context
+import scala.reflect.api.Universe
 
 trait InspectionHelpers {
 
-  val context: Context
-
-  import context.universe._
+  val universe: Universe
+  import universe._
   import scala.reflect.internal
 
   def isAbstract(sym: Symbol): Boolean = sym
