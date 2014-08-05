@@ -6,13 +6,13 @@ import scala.tools.reflect.ToolBox
 package object reflection {
 
   private val mirror = scala.reflect.runtime.universe.runtimeMirror(getClass.getClassLoader)
-  private val helpers = new InspectionHelpers with TemplateHelpers {
+  object Composition extends Composition {
     val universe = mirror.universe
   }
 
-  import helpers.universe._
+  import Composition.universe._
 
-  def mix[A, B](a: A, b: B)(implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A with B =
+  def mix[A, B](a: A, b: B)(implicit aT: TypeTag[A], bT: TypeTag[B]): A with B =
     mix[A, B](aT, bT)(a, b)
 
   /**
@@ -21,39 +21,8 @@ package object reflection {
    *
    * TODO caching
    */
-  def mix[A, B](implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A With B = {
-
-    import helpers._
-    import universe._
-
+  def mix[A, B](implicit aT: TypeTag[A], bT: TypeTag[B]): A With B = {
     val tb = mirror.mkToolBox()
-
-    // freshName cannot be accessed in reflective environment...
-    // reminder: compiler crashes if identifiers end in $
-    // @see https://issues.scala-lang.org/browse/SI-8425
-    def fresh(name: String) = "$_" + name + "_"
-
-    val aName = newTermName(fresh("a"))
-    val bName = newTermName(fresh("b"))
-
-    val abstractMembersA = abstractMembers(aT)
-    val abstractMembersB = abstractMembers(bT)
-    val memberDefs = abstractMembersB.map { defineMember(_, bName) } ++ (abstractMembersA
-      .filterNot(abstractMembersB contains _)
-      .map { defineMember(_, aName) })
-
-    val types = filterOutObjectLikeThings((getTypeComponents(aT.tpe) ++ getTypeComponents(bT.tpe)).distinct)
-
-    val constrName = newTypeName(fresh("Impl"))
-
-    val anonimpl = classDef(constrName, types, memberDefs)
-
-    val tree = q"""new de.unimarburg.composition.With[$aT, $bT] {
-      def apply($aName: $aT, $bName: $bT) = {
-        $anonimpl ;
-        new $constrName
-      }
-    }"""
-    tb.eval(tree).asInstanceOf[A With B]
+    tb.eval(Composition.materializeWith[A, B]).asInstanceOf[A With B]
   }
 }

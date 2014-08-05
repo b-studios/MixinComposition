@@ -9,34 +9,11 @@ package object macros {
 
   def materialize[A, B](c: Context)(implicit aT: c.WeakTypeTag[A], bT: c.WeakTypeTag[B]): c.Expr[A With B] = {
 
-    val helpers = new InspectionHelpers with TemplateHelpers {
+    object Composition extends Composition {
       val universe: c.universe.type = c.universe
     }
 
-    import helpers._
-    import c.universe._
-
-    val a = newTermName(c.fresh("a"))
-    val b = newTermName(c.fresh("b"))
-
-    val abstractMembersA = abstractMembers(aT)
-    val abstractMembersB = abstractMembers(bT)
-    val memberDefs = abstractMembersB.map { defineMember(_, b) } ++ (abstractMembersA
-      .filterNot(abstractMembersB contains _)
-      .map { defineMember(_, a) })
-
-    val types = filterOutObjectLikeThings((getTypeComponents(aT.tpe) ++ getTypeComponents(bT.tpe)).distinct)
-
-    val constrName = newTypeName(c.fresh("Impl"))
-
-    val anonimpl = classDef(constrName, types, memberDefs)
-
-    c.Expr[A With B](q"""new With[$aT, $bT] {
-      def apply($a: $aT, $b: $bT) = {
-        $anonimpl ;
-        new $constrName
-      }
-    }""")
+    c.Expr[A With B](Composition.materializeWith[A, B])
   }
 
   implicit def mix[A, B]: A With B = macro macros.materialize[A, B]
