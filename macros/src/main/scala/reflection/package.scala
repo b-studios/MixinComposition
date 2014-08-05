@@ -12,13 +12,16 @@ package object reflection {
 
   import helpers.universe._
 
+  def mix[A, B](a: A, b: B)(implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A with B =
+    mix[A, B](aT, bT)(a, b)
+
   /**
    * Method that allows mixing together objects. The resulting composition
    * uses delegation to implement both interfaces.
    *
    * TODO caching
    */
-  def mix[A, B](a: A, b: B)(implicit aT: TypeTag[A], bT: TypeTag[B]): A with B = {
+  def mix[A, B](implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A With B = {
 
     import helpers._
     import universe._
@@ -51,6 +54,6 @@ package object reflection {
         new $constrName
       }
     }"""
-    tb.eval(tree).asInstanceOf[A With B](a, b)
+    tb.eval(tree).asInstanceOf[A With B]
   }
 }
