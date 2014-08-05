@@ -1,5 +1,6 @@
 package de.unimarburg
 package composition
+package macros
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context

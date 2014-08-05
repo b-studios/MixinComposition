@@ -3,6 +3,8 @@ package composition
 
 object composeMacroTest {
 
+  import macros._
+
   trait A { def a: Int }
   trait B { def b: String }
   trait C { def x: Int }
