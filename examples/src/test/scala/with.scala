@@ -1,3 +1,4 @@
+package de.unimarburg
 package composition
 
 object composeMacroTest {

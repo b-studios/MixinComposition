@@ -1,3 +1,4 @@
+package de.unimarburg
 package composition
 
 import scala.reflect.macros.Context
