@@ -42,8 +42,9 @@ object MyBuild extends Build {
     settings = buildSettings ++ Seq(
       publish := {},
       publishLocal := {},
-      libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.0" % "test"
+      libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.0" % "test",
+      initialCommands in console := """import de.unimarburg.composition._"""
     )
   ) dependsOn(macros)
-  
+
 }
