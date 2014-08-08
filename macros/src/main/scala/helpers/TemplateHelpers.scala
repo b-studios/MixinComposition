@@ -6,7 +6,10 @@ trait TemplateHelpers { self: InspectionHelpers =>
   val compiler: Compiler
   import compiler.universe._
 
-  def defineMember(member: Symbol, delegatee: TermName) = {
+  def defineMember(member: Symbol, delegatee: TermName): ValOrDefDef =
+    defineMember(member, q"$delegatee")
+
+  def defineMember(member: Symbol, delegatee: Tree): ValOrDefDef = {
     val name = newTermName(member.name.toString)
     if (isGetter(member))
       q"""val $name = $delegatee.$name;"""
