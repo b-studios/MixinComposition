@@ -1,12 +1,11 @@
 package de.unimarburg
 package composition
 
-import scala.reflect.api.Universe
-
 trait InspectionHelpers {
 
-  val universe: Universe
-  import universe._
+  val compiler: Compiler
+
+  import compiler.universe._
   import scala.reflect.internal
 
   def isAbstract(sym: Symbol): Boolean = sym
@@ -28,6 +27,9 @@ trait InspectionHelpers {
     .parents
     .asInstanceOf[List[Type]]
 
+  def typeOfSym(s: Symbol): Type =
+    s.asInstanceOf[scala.reflect.internal.Symbols#Symbol].tpe.asInstanceOf[Type]
+
   /**
    * Should return components of intersection types as list
    * If type is not intersection type returns the singleton list
@@ -41,7 +43,10 @@ trait InspectionHelpers {
     ! (t =:= typeOf[AnyRef] || t =:= typeOf[AnyVal] || t =:= typeOf[Any])
   }
 
-  def abstractMembers[T](tt: WeakTypeTag[T]) =
-    tt.tpe.members.toList.filter(isAbstract)
+  def abstractMembers[T](tt: WeakTypeTag[T]): List[Symbol] =
+    abstractMembers(tt.tpe)
+
+  def abstractMembers(t: Type): List[Symbol] =
+    t.members.toList.filter(isAbstract)
 
 }

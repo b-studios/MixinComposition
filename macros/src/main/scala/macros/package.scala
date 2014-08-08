@@ -7,16 +7,32 @@ import scala.reflect.api.Universe
 
 package object macros {
 
-  def materialize[A, B](c: Context)(implicit aT: c.WeakTypeTag[A], bT: c.WeakTypeTag[B]): c.Expr[A With B] = {
-
-    object Composition extends Composition {
+  def mkCompiler(c: Context) = {
+    new Compiler {
       val universe: c.universe.type = c.universe
-    }
+      import universe._
 
-    c.Expr[A With B](Composition.materializeWith[A, B])
+      def fresh(name: String) = c.freshName(name)
+      def typecheck(t: Tree): Tree = c.typeCheck(t)
+      def untypecheck(t: Tree): Tree = c.untypecheck(t)
+      def parse(s: String): Tree = c.parse(s)
+    }
+  }
+
+  def Composition(c: Context) = new Composition {
+    val compiler = mkCompiler(c)
+  }
+
+  def materialize[A, B](c: Context)(implicit aT: c.WeakTypeTag[A], bT: c.WeakTypeTag[B]): c.Expr[A With B] = {
+    c.Expr[A With B](Composition(c).materializeWith[A, B])
+  }
+
+  def materializeF[F[+_], G[+_]](c: Context)(implicit fT: c.WeakTypeTag[F[_]], gT: c.WeakTypeTag[G[_]]): c.Expr[F WithF G] = {
+    c.Expr[F WithF G](Composition(c).materializeWithF[F, G])
   }
 
   implicit def mix[A, B]: A With B = macro macros.materialize[A, B]
+  implicit def mixF[F[+_], G[+_]]: F WithF G = macro macros.materializeF[F, G]
 
   implicit object With {
 

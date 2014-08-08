@@ -2,11 +2,11 @@ import sbt._
 import Keys._
 
 object BuildSettings {
-  
+
   val paradiseVersion   = "2.0.1"
 
-  val scalaBuildVersion = "2.10.3"
-  
+  val scalaBuildVersion = "2.11.2"
+
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "de.unimarburg",
     scalacOptions ++= Seq(),

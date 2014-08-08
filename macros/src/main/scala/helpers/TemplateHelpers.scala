@@ -1,12 +1,10 @@
 package de.unimarburg
 package composition
 
-import scala.reflect.api.Universe
-
 trait TemplateHelpers { self: InspectionHelpers =>
 
-  val universe: Universe
-  import universe._
+  val compiler: Compiler
+  import compiler.universe._
 
   def defineMember(member: Symbol, delegatee: TermName) = {
     val name = newTermName(member.name.toString)

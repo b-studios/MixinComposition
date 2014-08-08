@@ -6,7 +6,7 @@ package composition
  * can be composed. It has a method `apply` that, provided instances of `A` and `B`
  * creates the intersection `A with B` by delegation.
  *
- * Contract: This composition is right biased. As such, equally named methods in `B` 
+ * Contract: This composition is right biased. As such, equally named methods in `B`
  * will always override methods in `A`.
  *
  * For automatically generating instance of With there exist two implementations:
@@ -17,4 +17,11 @@ package composition
 trait With[A, B] {
   type Apply = A with B
   def apply(a: A, b: B): Apply
+}
+
+trait WithF[F[+_], G[+_]] {
+  type Apply[+A] = F[A] with G[A]
+  type ApplyF[A] = F[A]
+  type ApplyG[A] = G[A]
+  def apply[A](fa: ApplyF[A], ga: ApplyG[A]): Apply[A]
 }
