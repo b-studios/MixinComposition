@@ -131,3 +131,67 @@ def canCompose[A: TypeTag](a: A) = new {
 Due to limitations in the implementation, currently `A` and `B` both have to
 be stable types. Thus, it is not possible of using the reflection based
 implementation within a [cake](http://jonasboner.com/2008/10/06/real-world-scala-dependency-injection-di/).
+
+### Type Constructors
+It is also possible to mix together type constructors. The trait that witnesses the composition of two type constructors is given by:
+
+~~~scala
+trait WithF[F[+_], G[+_]] {
+  type Apply[+A] = F[A] with G[A]
+  def apply[A](f: F[A], g: G[A]): Apply[A]
+}
+~~~
+
+Given the traits `Foo` and `Bar`
+
+~~~scala
+trait Foo[+A] { def foo: A }
+trait Bar[+A] { def bar: A }
+~~~
+
+we can compose instances `f` and `g` (where the type parameter has to be instantiated with the same type `A`) to yield the intersection type `Foo[A] with Bar[A]`.
+
+~~~scala
+val composeFooWithBar: Foo WithF Bar = mixF[Foo, Bar]
+val both = composeFooWithBar[Int](
+  new Foo[Int] { def foo = 1 },
+  new Bar[Int] { def bar = 2})
+
+assert(both.foo == 1)
+assert(both.bar == 2)
+~~~
+
+Installation Instructions
+-------------------------
+Currently we do not offer a binary distribution. However, there are two easy ways of using the library in your sbt project.
+
+### 1. Project References
+It is possible to tell sbt to reference projects that are stored in a git repository. Simply add the following line to your `Build.scala` configuration:
+
+~~~scala
+val composition = RootProject( uri("git://github.com/b-studios/MixinComposition.git") )
+~~~
+
+Now you can add the composition project as dependency to your project:
+
+~~~scala
+lazy val root = Project("root", file(".")) dependsOn (composition)
+~~~
+
+sbt will automatically clone the git repository and build the dependency project for you.
+
+### 2. Local Publishing
+If the first alternative is not working (or not suitable for you) you can also
+clone the repository by your self and then publish the library locally:
+
+~~~
+git clone git@github.com:b-studios/MixinComposition.git
+cd MixinComposition
+sbt publishLocal
+~~~
+
+Now in your build script add the library dependency:
+
+~~~scala
+libraryDependencies += "de.unimarburg" %% "mixin-composition" % "0.2-SNAPSHOT"
+~~~
