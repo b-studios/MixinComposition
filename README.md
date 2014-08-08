@@ -166,7 +166,7 @@ Installation Instructions
 Currently we do not offer a binary distribution. However, there are two easy ways of using the library in your sbt project.
 
 ### 1. Project References
-It is possible to tell sbt to reference projects that are stored in a git repository. Simply add the following line to your `Build.scala` configuration:
+It is possible to [tell sbt](https://github.com/harrah/xsbt/wiki/Full-Configuration) to reference projects that are stored in a git repository. Simply add the following line to your `Build.scala` configuration:
 
 ~~~scala
 val composition = RootProject( uri("git://github.com/b-studios/MixinComposition.git") )
