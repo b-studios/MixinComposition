@@ -22,7 +22,8 @@ class FunctorInstanceReflectionTest extends FlatSpec with Shared {
    import reflection._
    import functorInstanceFixtures._
 
-   val f = implicitly[Functor[F]]
+   val f = functor[F]
+   //val f = implicitly[Functor[F]]
 
    val StringF = f.map[Int, String](_.toString, IntF)
    assert(StringF.foo == "42")
@@ -34,7 +35,8 @@ class FunctorInstanceMacrosTest extends FlatSpec with Shared {
    import macros._
    import functorInstanceFixtures._
 
-   val f = implicitly[Functor[F]]
+   val f = functor[F]
+   //val f = implicitly[Functor[F]]
 
    val StringF = f.map[Int, String](_.toString, IntF)
    assert(StringF.foo == "42")

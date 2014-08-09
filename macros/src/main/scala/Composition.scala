@@ -49,7 +49,7 @@ trait Composition extends InspectionHelpers with TemplateHelpers { self =>
     //     type mismatch;
     //     [error]  found   : A(in method apply)(in method apply) ...
     //     [error]  required: A(in method apply)(in method apply) ...
-    val composed = parse(showCode(composedInstance(fName, gName, fParamT, gParamT)))
+    val composed = composedInstance(fName, gName, fParamT, gParamT)
 
     buildWithF(composed)
   }
@@ -76,10 +76,8 @@ trait Composition extends InspectionHelpers with TemplateHelpers { self =>
 
     val types = filterOutObjectLikeThings((getTypeComponents(aT) ++ getTypeComponents(bT)).distinct)
 
-    val constrName = newTypeName(fresh("Impl"))
-
-    val anonimpl = classDef(constrName, types, memberDefs)
-
-    q"{ $anonimpl; new $constrName }"
+    val superClasses = types.map(_.toString) mkString " with "
+    val memberString = memberDefs.map(m => showCode(m)) mkString ";\n"
+    parse(s"{ new $superClasses { $memberString } }")
   }
 }

@@ -5,11 +5,14 @@ import scala.tools.reflect.ToolBox
 
 package object reflection {
 
-  lazy val mirror = scala.reflect.runtime.universe.runtimeMirror(getClass.getClassLoader)
-  def toolbox: ToolBox[mirror.universe.type] = mirror.mkToolBox()
+  def mirror = scala.reflect.runtime.universe.runtimeMirror(getClass.getClassLoader)
+  def toolbox = mirror.mkToolBox()
 
   def mkCompiler = new Compiler {
-    val universe: mirror.universe.type = mirror.universe
+    val mr = mirror
+    val tb = mr.mkToolBox()
+
+    val universe: mr.universe.type = mr.universe
     import universe._
 
     // freshName cannot be accessed in reflective environment...
@@ -18,9 +21,9 @@ package object reflection {
     private var id: Int = 0;
     def fresh(name: String) = { id = id + 1; "$_" + name + "_" + id }
 
-    def typecheck(t: Tree): Tree = toolbox.typeCheck(t)
-    def untypecheck(t: Tree): Tree = toolbox.untypecheck(t)
-    def parse(s: String): Tree = toolbox.parse(s)
+    def typecheck(t: Tree): Tree = tb.typeCheck(t)
+    def untypecheck(t: Tree): Tree = tb.untypecheck(t)
+    def parse(s: String): Tree = tb.parse(s)
   }
 
   object ReflectionTools extends Composition with FunctorInstances {
@@ -28,10 +31,10 @@ package object reflection {
   }
   import ReflectionTools.compiler.universe._
 
-  implicit def functor[F[+_]](implicit fT: TypeTag[F[_]]): Functor[F] =
+  implicit def functor[F[+_]](implicit fT: WeakTypeTag[F[_]]): Functor[F] =
     toolbox.eval(ReflectionTools.materializeFunctorInstance[F]).asInstanceOf[Functor[F]]
 
-  def mix[A, B](a: A, b: B)(implicit aT: TypeTag[A], bT: TypeTag[B]): A with B =
+  def mix[A, B](a: A, b: B)(implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A with B =
     mix[A, B](aT, bT)(a, b)
 
   /**
@@ -40,9 +43,9 @@ package object reflection {
    *
    * TODO caching
    */
-  def mix[A, B](implicit aT: TypeTag[A], bT: TypeTag[B]): A With B =
+  def mix[A, B](implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A With B =
     toolbox.eval(ReflectionTools.materializeWith[A, B]).asInstanceOf[A With B]
 
-  def mixF[F[+_], G[+_]](implicit fT: TypeTag[F[_]], gT: TypeTag[G[_]]): F WithF G =
+  def mixF[F[+_], G[+_]](implicit fT: WeakTypeTag[F[_]], gT: WeakTypeTag[G[_]]): F WithF G =
     toolbox.eval(ReflectionTools.materializeWithF[F, G]).asInstanceOf[F WithF G]
 }

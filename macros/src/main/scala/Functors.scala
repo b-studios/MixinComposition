@@ -61,7 +61,19 @@ trait FunctorInstances extends InspectionHelpers with TemplateHelpers {
         }))
 
     val constrName = newTypeName(fresh("Impl"))
-    val anonimpl = classDef(constrName, fbT :: Nil, memberDefs)
-    buildFunctorInstance(parse(showCode(q"{ $anonimpl; new $constrName }")))
+    val superTypes = filterOutObjectLikeThings(getTypeComponents(fbT).distinct)
+
+    // this seems wrong, but calling showCode(tq"$fbT") does sometimes
+    // emit an empty string which is then interpreted as AnyRef
+    val className = fbT.toString
+
+    val memberString = memberDefs.map(m => showCode(m)) mkString ";\n"
+
+    // putting everything together as a string seems fragile, but it
+    // removes conflicting type information and also works better then
+    // the combination of showCode and quasiquotes
+    val anonimpl = parse(s"{ new $className { $memberString } }")
+
+    buildFunctorInstance(anonimpl)
   }
 }
