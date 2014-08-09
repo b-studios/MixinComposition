@@ -3,12 +3,12 @@ package composition
 
 import scala.tools.reflect.ToolBox
 
-package object reflection {
+trait ReflectionImpl extends Composition with FunctorInstances {
 
   def mirror = scala.reflect.runtime.universe.runtimeMirror(getClass.getClassLoader)
   def toolbox = mirror.mkToolBox()
 
-  def mkCompiler = new Compiler {
+  lazy val compiler = new Compiler {
     val mr = mirror
     val tb = mr.mkToolBox()
 
@@ -25,14 +25,14 @@ package object reflection {
     def untypecheck(t: Tree): Tree = tb.untypecheck(t)
     def parse(s: String): Tree = tb.parse(s)
   }
+}
 
-  object ReflectionTools extends Composition with FunctorInstances {
-    val compiler = mkCompiler
-  }
-  import ReflectionTools.compiler.universe._
+package object reflection extends ReflectionImpl {
+
+  import compiler.universe._
 
   implicit def functor[F[+_]](implicit fT: WeakTypeTag[F[_]]): Functor[F] =
-    toolbox.eval(ReflectionTools.materializeFunctorInstance[F]).asInstanceOf[Functor[F]]
+    toolbox.eval(materializeFunctorInstance[F]).asInstanceOf[Functor[F]]
 
   def mix[A, B](a: A, b: B)(implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A with B =
     mix[A, B](aT, bT)(a, b)
@@ -43,9 +43,9 @@ package object reflection {
    *
    * TODO caching
    */
-  def mix[A, B](implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A With B =
-    toolbox.eval(ReflectionTools.materializeWith[A, B]).asInstanceOf[A With B]
+  implicit def mix[A, B](implicit aT: WeakTypeTag[A], bT: WeakTypeTag[B]): A With B =
+    toolbox.eval(materializeWith[A, B]).asInstanceOf[A With B]
 
-  def mixF[F[+_], G[+_]](implicit fT: WeakTypeTag[F[_]], gT: WeakTypeTag[G[_]]): F WithF G =
-    toolbox.eval(ReflectionTools.materializeWithF[F, G]).asInstanceOf[F WithF G]
+  implicit def mixF[F[+_], G[+_]](implicit fT: WeakTypeTag[F[_]], gT: WeakTypeTag[G[_]]): F WithF G =
+    toolbox.eval(materializeWithF[F, G]).asInstanceOf[F WithF G]
 }
