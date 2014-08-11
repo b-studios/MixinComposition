@@ -10,7 +10,7 @@ class D { def d: Boolean = true }
 abstract class E { def e: String }
 
 trait WithParams {
-  def foo(a: Int)(b: String): String
+  def foo(a: Int)(b: String, c: List[String]): String
 }
 
 trait Shared {
@@ -19,7 +19,7 @@ trait Shared {
   val a = new A { def a = 42 }
   val b = new B { def b = "Hello Composition" }
   val bc = new B with C { def b = "foo"; def c = 42 }
-  val params = new WithParams { def foo(a: Int)(b: String) = b + "_foo_" + a.toString }
+  val params = new WithParams { def foo(a: Int)(b: String, c: List[String]) = b + "_foo_" + a.toString }
 }
 
 class MacrosTest extends FlatSpec with Shared {
@@ -65,7 +65,7 @@ class ReflectionTest extends FlatSpec with Shared {
   }
 
   "Mixing traits with methods that contain params" should "pass arguments" in {
-    assert(mix(params, a).foo(42)("hello") == "hello_foo_42")
+    assert(mix(params, a).foo(42)("hello", Nil) == "hello_foo_42")
     assert(mix(params, a).a == 42)
   }
 }
