@@ -72,7 +72,7 @@ trait FunctorInstances extends InspectionHelpers with TemplateHelpers {
 
     // this seems wrong, but calling showCode(tq"$fbT") does sometimes
     // emit an empty string which is then interpreted as AnyRef
-    val className = fbT.toString
+    val className = superTypes.map(_.toString) mkString " with " //fbT.toString
 
     // toString actually works better than showCode here.
     // showCode sometimes did not print types in method declarations...
@@ -81,8 +81,7 @@ trait FunctorInstances extends InspectionHelpers with TemplateHelpers {
     // putting everything together as a string seems fragile, but it
     // removes conflicting type information and also works better then
     // the combination of showCode and quasiquotes
-    val anonimpl = parse(s"{ new $className { $memberString } }")
-
-    buildFunctorInstance(anonimpl)
+    val implstr = s"{ new $className { $memberString } }"
+    buildFunctorInstance(parse(implstr))
   }
 }

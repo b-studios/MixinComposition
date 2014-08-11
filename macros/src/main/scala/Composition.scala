@@ -77,7 +77,7 @@ trait Composition extends InspectionHelpers with TemplateHelpers { self =>
     val types = filterOutObjectLikeThings((getTypeComponents(aT) ++ getTypeComponents(bT)).distinct)
 
     val superClasses = types.map(_.toString) mkString " with "
-    val memberString = memberDefs.map(m => showCode(m)) mkString ";\n"
+    val memberString = memberDefs.map(m => m.toString) mkString ";\n"
     parse(s"{ new $superClasses { $memberString } }")
   }
 }
