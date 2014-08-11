@@ -24,8 +24,14 @@ trait FunctorInstances extends InspectionHelpers with TemplateHelpers {
 
     val faName = newTermName(fresh("fa"))
 
-    val List(paramS) = fC.typeParams
-    val paramT = typeOfSym(paramS)
+    // find all type params in superclasses
+    val typeParams = for {
+      cls <- fT.tpe.baseClasses
+      tc = typeOfSym(cls).typeConstructor
+      if tc.takesTypeArgs
+      param <- tc.typeParams
+    } yield typeOfSym(param)
+
 
     val (aTName, bTName, fName) = (newTypeName(fresh("A")), newTypeName(fresh("B")), newTermName(fresh("f")))
 
@@ -45,9 +51,10 @@ trait FunctorInstances extends InspectionHelpers with TemplateHelpers {
     val (faT, fbT) = (appliedType(fC, aT), appliedType(fC, bT))
 
     val (reqMap, plain) = abstractMembers(fbT).partition {
-      case m if m.isMethod => m.asMethod.returnType =:= paramT
-      case m => typeOfSym(m).resultType =:= paramT
+      case m if m.isMethod => typeParams contains m.asMethod.returnType
+      case m => typeParams contains typeOfSym(m).resultType
     }
+
 
     val memberDefs = (plain.map(defineMember(_, faName)) ++
 
@@ -67,7 +74,9 @@ trait FunctorInstances extends InspectionHelpers with TemplateHelpers {
     // emit an empty string which is then interpreted as AnyRef
     val className = fbT.toString
 
-    val memberString = memberDefs.map(m => showCode(m)) mkString ";\n"
+    // toString actually works better than showCode here.
+    // showCode sometimes did not print types in method declarations...
+    val memberString = memberDefs.map(m => m.toString) mkString ";\n"
 
     // putting everything together as a string seems fragile, but it
     // removes conflicting type information and also works better then
