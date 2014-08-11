@@ -9,12 +9,17 @@ trait C { def c: Int }
 class D { def d: Boolean = true }
 abstract class E { def e: String }
 
+trait WithParams {
+  def foo(a: Int)(b: String): String
+}
+
 trait Shared {
   type Alias = B with C
 
   val a = new A { def a = 42 }
   val b = new B { def b = "Hello Composition" }
   val bc = new B with C { def b = "foo"; def c = 42 }
+  val params = new WithParams { def foo(a: Int)(b: String) = b + "_foo_" + a.toString }
 }
 
 class MacrosTest extends FlatSpec with Shared {
@@ -33,6 +38,9 @@ class MacrosTest extends FlatSpec with Shared {
 
   // first one can be a class
   mix[D, D]
+
+  // with parameters
+  mix[WithParams, A]
 }
 
 class ReflectionTest extends FlatSpec with Shared {
@@ -54,5 +62,10 @@ class ReflectionTest extends FlatSpec with Shared {
 
   "Mixing a type alias and a trait" should "resolve the type alias" in {
     assert(mix[Alias, A](bc, a).c == 42)
+  }
+
+  "Mixing traits with methods that contain params" should "pass arguments" in {
+    assert(mix(params, a).foo(42)("hello") == "hello_foo_42")
+    assert(mix(params, a).a == 42)
   }
 }
