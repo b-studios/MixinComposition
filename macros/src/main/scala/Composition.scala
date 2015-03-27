@@ -60,7 +60,14 @@ trait Composition extends InspectionHelpers with TemplateHelpers { self =>
     val aName = newTermName(fresh("a"))
     val bName = newTermName(fresh("b"))
 
-    val composed = composedInstance(aName, bName, aT.tpe, bT.tpe)
+    // shortcuts for Any and AnyRef
+    val composed = if (isObjectLikeThing(aT.tpe)) {
+      q"""$bName"""
+    } else if (isObjectLikeThing(bT.tpe)) {
+      q"""$aName"""
+    } else {
+      composedInstance(aName, bName, aT.tpe, bT.tpe)
+    }
 
     q"""new de.unimarburg.composition.With[$aT, $bT] {
       def apply($aName: $aT, $bName: $bT) = $composed

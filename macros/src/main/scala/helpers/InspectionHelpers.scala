@@ -27,6 +27,10 @@ trait InspectionHelpers {
     .parents
     .asInstanceOf[List[Type]]
 
+  def isFinal(sym: Symbol): Boolean = sym
+    .asInstanceOf[internal.Symbols#Symbol]
+    .hasFlag(internal.Flags.FINAL)
+
   def typeOfSym(s: Symbol): Type =
     s.asInstanceOf[scala.reflect.internal.Symbols#Symbol].tpe.asInstanceOf[Type]
 
@@ -39,9 +43,11 @@ trait InspectionHelpers {
     case t => List(t)
   }
 
-  def filterOutObjectLikeThings[T](types: List[Type]): List[Type] = types.filter { t =>
-    ! (t =:= typeOf[AnyRef] || t =:= typeOf[AnyVal] || t =:= typeOf[Any])
-  }
+  def isObjectLikeThing(t: Type): Boolean =
+    t =:= typeOf[AnyRef] || t =:= typeOf[AnyVal] || t =:= typeOf[Any]
+
+  def filterOutObjectLikeThings(types: List[Type]): List[Type] =
+    types filterNot isObjectLikeThing
 
   def abstractMembers[T](tt: WeakTypeTag[T]): List[Symbol] =
     abstractMembers(tt.tpe)
