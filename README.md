@@ -85,9 +85,9 @@ import macros._
 If the types `A` and `B` to be composed are not known at compile time the following pattern can be used to require materialization of With at the call site:
 
 ~~~scala
-def canCompose[A, B](a: A, b: B, ...)(implicit ev: A With B) = {
+def canCompose[A, B](a: A, b: B, ...)(implicit mixAB: A With B) = {
   ...
-  mix(a, b)
+  mixAB(a, b)
   ...
 }
 ~~~
