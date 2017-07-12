@@ -46,6 +46,9 @@ trait InspectionHelpers {
   def isObjectLikeThing(t: Type): Boolean =
     t =:= typeOf[AnyRef] || t =:= typeOf[AnyVal] || t =:= typeOf[Any]
 
+   def isTypeParameter(t: Type): Boolean =
+    t.erasure =:= typeOf[Object]
+
   def filterOutObjectLikeThings(types: List[Type]): List[Type] =
     types filterNot isObjectLikeThing
 

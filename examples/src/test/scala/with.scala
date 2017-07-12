@@ -41,6 +41,9 @@ class MacrosTest extends FlatSpec with Shared {
 
   // with parameters
   mix[WithParams, A]
+
+  // should be an error
+  // def tryMix[A, B](a: A, b: B) = mix[A, B](a, b)
 }
 
 class ReflectionTest extends FlatSpec with Shared {

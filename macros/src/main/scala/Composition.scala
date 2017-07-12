@@ -60,14 +60,21 @@ trait Composition extends InspectionHelpers with TemplateHelpers { self =>
     val aName = newTermName(fresh("a"))
     val bName = newTermName(fresh("b"))
 
-    // shortcuts for Any and AnyRef
-    val composed = if (isObjectLikeThing(aT.tpe)) {
-      q"""$bName"""
+    if (isTypeParameter(aT.tpe) || isTypeParameter(bT.tpe)) {
+      // TODO this should be a compiler error (c.error(pos, msg)), but then
+      //      we need a c.Position
+      sys error s"""|Cannot compose ${aT.tpe} and ${bT.tpe} since they are type parameters
+                    |that erase to Object.
+                    |
+                    |Maybe you tried to use `mix` on type parameters? You may either
+                    |use the reflection-based implementation and add `TypeTag`s or
+                    |parametrize over an instance of With[${aT.tpe},${bT.tpe}].""".stripMargin('|')
+
     } else if (isObjectLikeThing(bT.tpe)) {
       q"""$aName"""
-    } else {
-      composedInstance(aName, bName, aT.tpe, bT.tpe)
     }
+
+    val composed = composedInstance(aName, bName, aT.tpe, bT.tpe)
 
     q"""new de.unimarburg.composition.With[$aT, $bT] {
       def apply($aName: $aT, $bName: $bT) = $composed
